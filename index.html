@@ -823,7 +823,7 @@
     function place() {
       const rect = heroName.getBoundingClientRect();
       const h = chara.offsetHeight || 140;
-      chara.style.top = Math.round(rect.top - h + 10) + 'px';
+      chara.style.top = Math.round(rect.top - h - 80) + 'px';
     }
     place();
     window.addEventListener('resize', place);
