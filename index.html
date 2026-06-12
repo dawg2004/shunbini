@@ -483,17 +483,16 @@
   }
 
   /* ===== WALKING CHARACTER ===== */
-  /* キャラクター */
+  /* キャラクター - GIFが2000pxキャンバス内で自分で歩く */
   .chara-wrap {
     position: fixed;
     left: 0;
     top: 200px;
-    width: 1000px;
+    width: 100vw;
+    aspect-ratio: 2000 / 300;
     pointer-events: auto;
     cursor: pointer;
     z-index: 20;
-    animation: walkLR 12s linear infinite;
-    transform-origin: left center;
   }
   .chara-wrap img {
     width: 100%;
@@ -504,22 +503,13 @@
   }
   @keyframes jumpImg {
     0%   { transform: translateY(0); }
-    40%  { transform: translateY(-70px); }
-    60%  { transform: translateY(-70px); }
+    40%  { transform: translateY(-60px); }
+    60%  { transform: translateY(-60px); }
     100% { transform: translateY(0); }
   }
-  @keyframes walkLR {
-    0%   { transform: translateX(-110%) scaleX(1); }
-    2%   { transform: translateX(-5%)   scaleX(1); }
-    48%  { transform: translateX(calc(100vw - 95%)) scaleX(1); }
-    50%  { transform: translateX(calc(100vw + 10%)) scaleX(1); }
-    51%  { transform: translateX(calc(100vw + 10%)) scaleX(-1); }
-    53%  { transform: translateX(calc(100vw - 95%)) scaleX(-1); }
-    98%  { transform: translateX(-5%)   scaleX(-1); }
-    100% { transform: translateX(-110%) scaleX(-1); }
-  }
   @media (max-width: 640px) {
-    .chara-wrap { width: 600px; }
+    .chara-wrap { width: 100vw; }
+  
   }
 </style>
 </head>
@@ -814,22 +804,30 @@
     });
   });
 
-  // キャラクター: hero-name下端に配置 + クリックでジャンプ
+  // キャラクター: GIFの足元をHIGASHIDA上端に合わせる + クリックでジャンプ
   (function() {
     const chara = document.getElementById('charaWrap');
     const heroName = document.querySelector('.hero-name');
     if (!chara || !heroName) return;
+    const img = chara.querySelector('img');
+
+    // GIFキャンバス300px中、キャラ足元はy≈275 → 比率0.917
+    const FEET_RATIO = 0.917;
 
     function place() {
       const rect = heroName.getBoundingClientRect();
-      const h = chara.offsetHeight || 140;
-      chara.style.top = Math.round(rect.top - h - 120) + 'px';
+      // コンテナ高さ = 幅 * 300/2000 (aspect-ratioで確定)
+      const contH = chara.offsetWidth * 300 / 2000;
+      // 足元が文字上端に乗るように。少し重ねる(-8px)
+      chara.style.top = Math.round(rect.top - contH * FEET_RATIO - 8) + 'px';
     }
+
+    if (img.complete) place();
+    img.addEventListener('load', place);
     place();
     window.addEventListener('resize', place);
 
     function jump() {
-      const img = chara.querySelector('img');
       img.classList.remove('jump-active');
       void img.offsetWidth;
       img.classList.add('jump-active');
