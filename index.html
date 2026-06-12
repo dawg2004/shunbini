@@ -21,6 +21,7 @@
   html { font-size: 16px; }
 
   body {
+    position: relative;
     background: linear-gradient(145deg, #96d45e 0%, #6aaa35 40%, #5a9828 100%);
     background-attachment: fixed;
     color: var(--ink);
@@ -485,7 +486,7 @@
   /* ===== WALKING CHARACTER ===== */
   /* キャラクター - GIFが2000pxキャンバス内で自分で歩く */
   .chara-wrap {
-    position: fixed;
+    position: absolute;
     left: 0;
     top: 200px;
     width: 100vw;
@@ -815,17 +816,19 @@
     const FEET_RATIO = 0.917;
 
     function place() {
-      const rect = heroName.getBoundingClientRect();
-      // コンテナ高さ = 幅 * 300/2000 (aspect-ratioで確定)
+      // offsetTop: ページ上端からの絶対距離（スクロール不変）
+      const absTop = heroName.getBoundingClientRect().top + window.scrollY;
       const contH = chara.offsetWidth * 300 / 2000;
-      // 足元が文字上端に乗るように。少し重ねる(-8px)
-      chara.style.top = Math.round(rect.top - contH * FEET_RATIO - 8) + 'px';
+      chara.style.top = Math.round(absTop - contH * FEET_RATIO - 8) + 'px';
     }
 
-    if (img.complete) place();
-    img.addEventListener('load', place);
-    place();
     window.addEventListener('resize', place);
+    // ロード完了後に一度だけ確定
+    if (document.readyState === 'complete') {
+      place();
+    } else {
+      window.addEventListener('load', place, { once: true });
+    }
 
     function jump() {
       img.classList.remove('jump-active');
